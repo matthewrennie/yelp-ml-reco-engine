@@ -2,3 +2,4 @@
 .Rhistory
 yelp_*.csv
 .DS_Store
+*.Rda
