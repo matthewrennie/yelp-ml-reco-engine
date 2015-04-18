@@ -10,17 +10,23 @@ library(plyr)
 
 # read the reviews
 yelp_review = read.csv("yelp_academic_dataset_review_AZ_food_no_text.csv", stringsAsFactors=FALSE)
+# TODO: filter by Phoenix
+# TODO: #NAME?
+
 # project relevant columns
 yelp_rating_flat = yelp_review[,c("user_id","business_id","stars")]
 # discard non-unique entries (based on user_id and business_id only)
 yelp_rating_unique = yelp_rating_flat[!duplicated(yelp_rating_flat[1:2]),]
 
-# create a random sample (purely for speed purposes - cannot get results when using)
-# yelp_rating_unique <- yelp_rating_unique[sample(1:nrow(yelp_rating_unique), 10000, replace=FALSE),]
+# select reviews of only the most reviewed businesses
+topNReviewedBusinesses = 50
+business_review_frequency = data.frame(table(yelp_rating_unique$business_id))
+top_n_most_reviewed_businesses = business_review_frequency[order(-business_review_frequency$Freq),][1:topNReviewedBusinesses,]
+yelp_rating_unique = yelp_rating_unique[yelp_rating_unique$business_id %in% top_n_most_reviewed_businesses[,1], ]
 
 # filter users who have made less than x reviews
 #TODO: how does min user review affect evaluation?
-minUserReviews = 3
+minUserReviews = 10
 user_ids <- table(yelp_rating_unique$user_id)
 yelp_rating_unique = yelp_rating_unique[yelp_rating_unique$user_id %in% names(user_ids)[user_ids >= minUserReviews], ]
 
@@ -66,7 +72,7 @@ plot(split_evals, annotate=1:length(algorithms), legend="topleft")
 
 # TODO: Evaluate Predictions (RMSE)
 # TODO: Evaluate Binarized data
-# TODO: Build a script that can make a prediction and retrieve the restaurant names for a user
+# TODO: Build a script that can make a prediction (top 5) and retrieve the restaurant names for a user
 
 # --- misc functions ---
 # simple search for value
