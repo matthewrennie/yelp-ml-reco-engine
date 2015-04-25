@@ -1,6 +1,6 @@
 .RData
 .Rhistory
-yelp_*.csv
+*.csv
 .DS_Store
 *.Rda
 *.data

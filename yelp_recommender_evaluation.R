@@ -26,7 +26,7 @@ yelp_rating_unique = yelp_rating_unique[yelp_rating_unique$business_id %in% top_
 
 # filter users who have made less than x reviews
 #TODO: how does min user review affect evaluation?
-minUserReviews = 10
+minUserReviews = 5
 user_ids <- table(yelp_rating_unique$user_id)
 yelp_rating_unique = yelp_rating_unique[yelp_rating_unique$user_id %in% names(user_ids)[user_ids >= minUserReviews], ]
 
@@ -46,8 +46,11 @@ r = as(m, "realRatingMatrix")
 
 algorithms = list(
 	"random" = list(name="RANDOM", param=NULL),
-	"popular" = list(name="POPULAR", param=NULL)
-	#"user-based CF" = list(name="UBCF", param=list(method="Cosine", nn=50, minRating=5))
+	"popular" = list(name="POPULAR", param=NULL),
+	"ubcf" = list(name="UBCF", param=list(nn=50)),
+	"ubcf-c" = list(name="UBCF", param=list(method="Cosine", nn=50)),
+	"ubcf-p" = list(name="UBCF", param=list(method="Pearson", nn=50)),
+	"ibcf" = list(name="IBCF", param=list())
 	# TODO: UBCF
 	# TODO: IBCF
 	# TODO: others
@@ -57,13 +60,13 @@ algorithms = list(
 
 # evaluation schemes
 # split
-split = evaluationScheme(r, method="split", train = 0.9, k=1, given=minUserReviews, goodRating=5)
+split = evaluationScheme(r, method="split", train = 0.3, k=1, given=minUserReviews, goodRating=5)
 split_evals = evaluate(split, algorithms, n=c(1, 3, 5, 10, 15, 20))
 # TODO: k-fold
 # TODO: bootstrap sampling
 
 # evaluation results
-getConfusionMatrix(split_evals[["popular"]])
+getConfusionMatrix(split_evals[["ubcf"]])
 
 # visualization
 # Split: ROC Curve
@@ -71,6 +74,7 @@ plot(split_evals, annotate=1:length(algorithms), legend="topleft")
 # TODO: plot prec/recall chart
 
 # TODO: Evaluate Predictions (RMSE)
+plot(split_evals, "prec/rec", annotate=1:length(algorithms))
 # TODO: Evaluate Binarized data
 # TODO: Build a script that can make a prediction (top 5) and retrieve the restaurant names for a user
 
